@@ -17,15 +17,19 @@ jobs:
       with:
         go-version: '1.22.3'
 
-    - name: List chat directory structure
+    - name: List repository structure
       run: |
-        cd chat
-        ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//  /g' -e 's/^/  /' -e 's/-/|/'
+        ls -R
 
     - name: Build
       run: |
-        cd chat
-        CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o chat .
+        if [ -d "chat" ]; then
+          cd chat
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o chat .
+        else
+          echo "chat directory not found"
+          exit 1
+        fi
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
@@ -36,10 +40,16 @@ jobs:
     - name: Debug Info
       if: failure()
       run: |
-        echo "Chat directory contents:"
-        ls -R chat
+        echo "Current directory:"
+        pwd
+        echo "Directory contents:"
+        ls -R
         echo "Go environment:"
         go env
         echo "Go modules:"
-        cd chat
-        go list -m all
+        if [ -d "chat" ]; then
+          cd chat
+          go list -m all
+        else
+          echo "chat directory not found"
+        fi
