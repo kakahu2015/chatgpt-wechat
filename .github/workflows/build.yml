@@ -1,3 +1,4 @@
+
 name: Build Go Binary
 
 on:
@@ -17,13 +18,25 @@ jobs:
       with:
         go-version: '1.22.3'
 
+    - name: List directory structure
+      run: |
+        ls -R
+
     - name: Build
       run: |
-        cd chat
+        # 寻找包含 main 函数的 Go 文件
+        main_file=$(find . -name "*.go" -type f -exec grep -l "func main()" {} +)
+        if [ -z "$main_file" ]; then
+          echo "No Go file with main function found"
+          exit 1
+        fi
+        echo "Building $main_file"
+        dir=$(dirname "$main_file")
+        cd "$dir"
         CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o chat .
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: chat
-        path: chat/chat
+        path: ${{ github.workspace }}/chat
