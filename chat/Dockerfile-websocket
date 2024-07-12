@@ -6,15 +6,6 @@ ENV GO111MODULE=on \
     GOOS=linux \
     GOARCH=amd64
 
-# 判定 docker 是否能够访问外部网络
-RUN ping -c 1 -W 1 google.com > /dev/null \
-    && echo "www-ok" \
-    || go env -w GOPROXY=https://goproxy.cn,direct
-
-RUN ping -c 1 -W 1 google.com > /dev/null \
-    && echo "www-ok" \
-    || sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
-
 # 移动到工作目录：/build
 WORKDIR /build
 
